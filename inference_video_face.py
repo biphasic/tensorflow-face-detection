@@ -8,6 +8,8 @@ import time
 import numpy as np
 import tensorflow as tf
 import cv2
+import os
+import argparse
 
 sys.path.append("..")
 
@@ -27,12 +29,34 @@ label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
 categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
 
+def parse_args():
+  """Parse input arguments."""
+  parser = argparse.ArgumentParser(description='Face Detection using SSD')
+  parser.add_argument('--video_folder', dest='video_folder', help='Folder of video')
+  parser.add_argument('--video_name', dest='video_name', help='file name of video')
+  parser.add_argument('--conf_thresh', dest='conf_thresh', help='Confidence threshold for the detections, float from 0 to 1', default=0.85, type=float)
+
+  args = parser.parse_args()
+  return args
+
 def load_image_into_numpy_array(image):
   (im_width, im_height) = image.size
   return np.array(image.getdata()).reshape(
       (im_height, im_width, 3)).astype(np.uint8)
 
-cap = cv2.VideoCapture("./media/test.mp4")
+args = parse_args()
+path = os.path.normpath(args.video_folder).split(os.sep)
+recording_number = path[-1]
+
+video_path = os.path.join(args.video_folder, args.video_name)
+
+print(args.video_path)
+if not os.path.exists(args.video_path):
+    raise IOError('Video does not exist.')
+
+out_dir = args.video_folder
+
+cap = cv2.VideoCapture(video_path)
 out = None
 
 detection_graph = tf.Graph()
@@ -55,9 +79,9 @@ with detection_graph.as_default():
           break
 
       if out is None:
-          [h, w] = image.shape[:2]
-          out = cv2.VideoWriter("./media/test_out.avi", 0, 25.0, (w, h))
-
+          out_path =  args.video_folder + '/%s-ssd.avi' % recording_number
+          fourcc = cv2.cv.CV_FOURCC(*'XVID')
+          out = cv2.VideoWriter(out_path, fourcc, 25.0, (304, 240))
 
       image_np = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -81,9 +105,10 @@ with detection_graph.as_default():
       elapsed_time = time.time() - start_time
       print('inference time cost: {}'.format(elapsed_time))
       #print(boxes.shape, boxes)
+      print(boxes.shape[0])
       #print(scores.shape,scores)
       #print(classes.shape,classes)
-      #print(num_detections)
+      print(num_detections)
       # Visualization of the results of a detection.
       vis_util.visualize_boxes_and_labels_on_image_array(
 #          image_np,
