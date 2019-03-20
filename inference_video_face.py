@@ -56,7 +56,9 @@ if __name__ == '__main__':
     video = cv2.VideoCapture(video_path)
     out = None
 
-    fid = open(os.path.join(args.video_folder, '%s-ssd-annotations.csv' % recording_number), 'w')
+    csv_file = os.path.join(args.video_folder, '%s-ssd-annotations.csv' % recording_number)
+    print(csv_file)
+    fid = open(csv_file, 'w')
 
     detection_graph = tf.Graph()
     with detection_graph.as_default():
