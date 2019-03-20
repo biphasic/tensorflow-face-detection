@@ -39,7 +39,8 @@ if __name__ == '__main__':
     categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
     category_index = label_map_util.create_category_index(categories)
 
-
+    width = 304
+    height = 240
 
     args = parse_args()
     path = os.path.normpath(args.video_folder).split(os.sep)
@@ -51,10 +52,10 @@ if __name__ == '__main__':
     if not os.path.exists(video_path):
         raise IOError('Video does not exist.')
 
-    out_dir = args.video_folder
-
-    cap = cv2.VideoCapture(video_path)
+    video = cv2.VideoCapture(video_path)
     out = None
+
+    fid = open(os.path.join(args.video_folder, '%s-ssd-annotations.csv' % recording_number), 'w')
 
     detection_graph = tf.Graph()
     with detection_graph.as_default():
@@ -71,14 +72,14 @@ if __name__ == '__main__':
         frame_num = 1490;
         while frame_num:
           frame_num -= 1
-          ret, image = cap.read()
+          ret, image = video.read()
           if ret == 0:
               break
 
           if out is None:
               out_path =  args.video_folder + '/%s-ssd.avi' % recording_number
               fourcc = cv2.cv.CV_FOURCC(*'XVID')
-              out = cv2.VideoWriter(out_path, fourcc, 25.0, (304, 240))
+              out = cv2.VideoWriter(out_path, fourcc, 25.0, (width, height))
 
           image_np = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -108,7 +109,6 @@ if __name__ == '__main__':
           print(num_detections)
           # Visualization of the results of a detection.
           vis_util.visualize_boxes_and_labels_on_image_array(
-    #          image_np,
               image,
               np.squeeze(boxes),
               np.squeeze(classes).astype(np.int32),
@@ -117,13 +117,13 @@ if __name__ == '__main__':
               use_normalized_coordinates=True,
               line_thickness=4)
 
-          new_boxes = []
           for i, box in enumerate(np.squeeze(boxes)):
-              if(np.squeeze(scores)[i] > 0.8):
-                  new_boxes.append(box)
+              if np.squeeze(scores)[i] > 0.5:
+                  print("ymin={}, xmin={}, ymax={}, xmax={}".format(box[0]*height,box[1]*width,box[2]*height,box[3]*width))
+                  #fid.write(str(n_frame*1000000/frame_rate) + ', %f, %f, %f, %f, %f\n' % (dets[j, 0], dets[j, 1], dets[j, 2], dets[j, 3], dets[j, 4]))
           np.savetxt('/opt/edata/testfile.csv', new_boxes, delimiter=',')
           out.write(image)
 
-
-        cap.release()
+        video.release()
+        fid.close()
         out.release()
