@@ -21,7 +21,7 @@ def parse_args():
   parser = argparse.ArgumentParser(description='Face Detection using SSD')
   parser.add_argument('--video_folder', dest='video_folder', help='Folder of video')
   parser.add_argument('--video_name', dest='video_name', help='file name of video')
-  parser.add_argument('--conf_thresh', dest='conf_thresh', help='Confidence threshold for the detections, float from 0 to 1', default=0.85, type=float)
+  parser.add_argument('--conf_thresh', dest='conf_thresh', help='Confidence threshold for the detections, float from 0 to 1', default=0.7, type=float)
 
   args = parser.parse_args()
   return args
@@ -42,7 +42,6 @@ if __name__ == '__main__':
     width = 304
     height = 240
     frame_rate = 25.0
-    min_score_thresh = 0.7
 
     args = parse_args()
     path = os.path.normpath(args.video_folder).split(os.sep)
@@ -119,10 +118,10 @@ if __name__ == '__main__':
               category_index,
               use_normalized_coordinates=True,
               line_thickness=4,
-              min_score_thresh=min_score_thresh)
+              min_score_thresh=conf_thresh)
 
           for i, box in enumerate(np.squeeze(boxes)):
-              if np.squeeze(scores)[i] > min_score_thresh:
+              if np.squeeze(scores)[i] > conf_thresh:
                   print("frame={}, ymin={}, xmin={}, ymax={}, xmax={}".format(frame_num, box[0]*height, box[1]*width, box[2]*height, box[3]*width))
                   fid_csv.write(str(frame_num*1000000/frame_rate) + ', %f, %f, %f, %f\n' % (box[0]*height, box[1]*width, box[2]*height, box[3]*width))
           out.write(image)
