@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     video_path = os.path.join(args.video_folder, args.video_name)
 
-    print(args.video_path)
+    print(video_path)
     if not os.path.exists(args.video_path):
         raise IOError('Video does not exist.')
 
