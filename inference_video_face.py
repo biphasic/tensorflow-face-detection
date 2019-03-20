@@ -39,7 +39,10 @@ if __name__ == '__main__':
     categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
     category_index = label_map_util.create_category_index(categories)
 
-
+    width = 304
+    height = 240
+    frame_rate = 25.0
+    min_score_thresh = 0.7
 
     args = parse_args()
     path = os.path.normpath(args.video_folder).split(os.sep)
@@ -51,10 +54,12 @@ if __name__ == '__main__':
     if not os.path.exists(video_path):
         raise IOError('Video does not exist.')
 
-    out_dir = args.video_folder
-
-    cap = cv2.VideoCapture(video_path)
+    video = cv2.VideoCapture(video_path)
     out = None
+
+    csv_file = os.path.join(args.video_folder, '%s-ssd-annotations.csv' % recording_number)
+    print(csv_file)
+    fid_csv = open(csv_file, 'w')
 
     detection_graph = tf.Graph()
     with detection_graph.as_default():
@@ -68,17 +73,16 @@ if __name__ == '__main__':
       config = tf.ConfigProto()
       config.gpu_options.allow_growth = True
       with tf.Session(graph=detection_graph, config=config) as sess:
-        frame_num = 1490;
-        while frame_num:
-          frame_num -= 1
-          ret, image = cap.read()
-          if ret == 0:
+        frame_num = 1;
+        while True:
+          ret, image = video.read()
+          if ret != True:
               break
 
           if out is None:
               out_path =  args.video_folder + '/%s-ssd.avi' % recording_number
               fourcc = cv2.cv.CV_FOURCC(*'XVID')
-              out = cv2.VideoWriter(out_path, fourcc, 25.0, (304, 240))
+              out = cv2.VideoWriter(out_path, fourcc, frame_rate, (width, height))
 
           image_np = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -102,22 +106,28 @@ if __name__ == '__main__':
           elapsed_time = time.time() - start_time
           print('inference time cost: {}'.format(elapsed_time))
           #print(boxes.shape, boxes)
-          print(boxes.shape[0])
+          #print(boxes.shape[0])
           #print(scores.shape,scores)
           #print(classes.shape,classes)
-          print(num_detections)
+          #print(num_detections)
           # Visualization of the results of a detection.
           vis_util.visualize_boxes_and_labels_on_image_array(
-    #          image_np,
               image,
               np.squeeze(boxes),
               np.squeeze(classes).astype(np.int32),
               np.squeeze(scores),
               category_index,
               use_normalized_coordinates=True,
-              line_thickness=4)
+              line_thickness=4,
+              min_score_thresh=min_score_thresh)
+
+          for i, box in enumerate(np.squeeze(boxes)):
+              if np.squeeze(scores)[i] > min_score_thresh:
+                  print("frame={}, ymin={}, xmin={}, ymax={}, xmax={}".format(frame_num, box[0]*height, box[1]*width, box[2]*height, box[3]*width))
+                  fid_csv.write(str(frame_num*1000000/frame_rate) + ', %f, %f, %f, %f\n' % (box[0]*height, box[1]*width, box[2]*height, box[3]*width))
           out.write(image)
+          frame_num += 1
 
-
-        cap.release()
+        video.release()
+        fid_csv.close()
         out.release()
