@@ -116,6 +116,12 @@ if __name__ == '__main__':
               category_index,
               use_normalized_coordinates=True,
               line_thickness=4)
+
+          new_boxes = []
+          for i, box in enumerate(np.squeeze(boxes)):
+              if(np.squeeze(scores)[i] > 0.8):
+                  new_boxes.append(box)
+          np.savetxt('/opt/edata/testfile.csv', new_boxes, delimiter=',')
           out.write(image)
 
 
