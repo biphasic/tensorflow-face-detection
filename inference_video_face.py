@@ -42,6 +42,7 @@ if __name__ == '__main__':
     width = 304
     height = 240
     frame_rate = 25.0
+    min_score_thresh = 0.7
 
     args = parse_args()
     path = os.path.normpath(args.video_folder).split(os.sep)
@@ -117,10 +118,11 @@ if __name__ == '__main__':
               np.squeeze(scores),
               category_index,
               use_normalized_coordinates=True,
-              line_thickness=4)
+              line_thickness=4,
+              min_score_thresh=min_score_thresh)
 
           for i, box in enumerate(np.squeeze(boxes)):
-              if np.squeeze(scores)[i] > 0.5:
+              if np.squeeze(scores)[i] > min_score_thresh:
                   print("frame={}, ymin={}, xmin={}, ymax={}, xmax={}".format(frame_num, box[0]*height, box[1]*width, box[2]*height, box[3]*width))
                   fid_csv.write(str(frame_num*1000000/frame_rate) + ', %f, %f, %f, %f\n' % (box[0]*height, box[1]*width, box[2]*height, box[3]*width))
           out.write(image)
