@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     csv_file = os.path.join(args.video_folder, '%s-ssd-annotations.csv' % recording_number)
     print(csv_file)
-    fid = open(csv_file, 'w')
+    fid_csv = open(csv_file, 'w')
 
     detection_graph = tf.Graph()
     with detection_graph.as_default():
@@ -122,10 +122,10 @@ if __name__ == '__main__':
           for i, box in enumerate(np.squeeze(boxes)):
               if np.squeeze(scores)[i] > 0.5:
                   print("frame={}, ymin={}, xmin={}, ymax={}, xmax={}".format(frame_num, box[0]*height, box[1]*width, box[2]*height, box[3]*width))
-                  fid.write(str(frame_num*1000000/frame_rate) + ', %f, %f, %f, %f\n' % (box[0]*height, box[1]*width, box[2]*height, box[3]*width))
+                  fid_csv.write(str(frame_num*1000000/frame_rate) + ', %f, %f, %f, %f\n' % (box[0]*height, box[1]*width, box[2]*height, box[3]*width))
           out.write(image)
           frame_num += 1
 
         video.release()
-        fid.close()
+        fid_csv.close()
         out.release()
