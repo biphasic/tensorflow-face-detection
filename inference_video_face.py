@@ -69,11 +69,10 @@ if __name__ == '__main__':
       config = tf.ConfigProto()
       config.gpu_options.allow_growth = True
       with tf.Session(graph=detection_graph, config=config) as sess:
-        frame_num = 1490;
-        while frame_num:
-          frame_num -= 1
+        frame_num = 1;
+        while True:
           ret, image = video.read()
-          if ret == 0:
+          if ret != True:
               break
 
           if out is None:
@@ -119,10 +118,10 @@ if __name__ == '__main__':
 
           for i, box in enumerate(np.squeeze(boxes)):
               if np.squeeze(scores)[i] > 0.5:
-                  print("ymin={}, xmin={}, ymax={}, xmax={}".format(box[0]*height,box[1]*width,box[2]*height,box[3]*width))
+                  print("frame={}, ymin={}, xmin={}, ymax={}, xmax={}".format(frame_num, box[0]*height,box[1]*width,box[2]*height,box[3]*width))
                   #fid.write(str(n_frame*1000000/frame_rate) + ', %f, %f, %f, %f, %f\n' % (dets[j, 0], dets[j, 1], dets[j, 2], dets[j, 3], dets[j, 4]))
-          np.savetxt('/opt/edata/testfile.csv', new_boxes, delimiter=',')
           out.write(image)
+          frame_num += 1
 
         video.release()
         fid.close()
