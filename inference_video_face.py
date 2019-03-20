@@ -41,6 +41,7 @@ if __name__ == '__main__':
 
     width = 304
     height = 240
+    frame_rate = 25.0
 
     args = parse_args()
     path = os.path.normpath(args.video_folder).split(os.sep)
@@ -78,7 +79,7 @@ if __name__ == '__main__':
           if out is None:
               out_path =  args.video_folder + '/%s-ssd.avi' % recording_number
               fourcc = cv2.cv.CV_FOURCC(*'XVID')
-              out = cv2.VideoWriter(out_path, fourcc, 25.0, (width, height))
+              out = cv2.VideoWriter(out_path, fourcc, frame_rate, (width, height))
 
           image_np = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -102,10 +103,10 @@ if __name__ == '__main__':
           elapsed_time = time.time() - start_time
           print('inference time cost: {}'.format(elapsed_time))
           #print(boxes.shape, boxes)
-          print(boxes.shape[0])
+          #print(boxes.shape[0])
           #print(scores.shape,scores)
           #print(classes.shape,classes)
-          print(num_detections)
+          #print(num_detections)
           # Visualization of the results of a detection.
           vis_util.visualize_boxes_and_labels_on_image_array(
               image,
@@ -118,8 +119,8 @@ if __name__ == '__main__':
 
           for i, box in enumerate(np.squeeze(boxes)):
               if np.squeeze(scores)[i] > 0.5:
-                  print("frame={}, ymin={}, xmin={}, ymax={}, xmax={}".format(frame_num, box[0]*height,box[1]*width,box[2]*height,box[3]*width))
-                  #fid.write(str(n_frame*1000000/frame_rate) + ', %f, %f, %f, %f, %f\n' % (dets[j, 0], dets[j, 1], dets[j, 2], dets[j, 3], dets[j, 4]))
+                  print("frame={}, ymin={}, xmin={}, ymax={}, xmax={}".format(frame_num, box[0]*height, box[1]*width, box[2]*height, box[3]*width))
+                  fid.write(str(frame_num*1000000/frame_rate) + ', %f, %f, %f, %f\n' % (box[0]*height, box[1]*width, box[2]*height, box[3]*width))
           out.write(image)
           frame_num += 1
 
