@@ -10,6 +10,7 @@ import tensorflow as tf
 import cv2
 import os
 import argparse
+import subprocess
 
 sys.path.append("..")
 
@@ -120,10 +121,15 @@ if __name__ == '__main__':
               line_thickness=4,
               min_score_thresh=args.conf_thresh)
 
+          power_check_command = ("nvidia-smi", "--query-gpu=power.draw", "--format=csv,noheader,nounits")
+          power_string = subprocess.check_output(power_check_command)
+          power_number = float(power_string)
+          print("power drawn: {}".format(power_number))
+
           for i, box in enumerate(np.squeeze(boxes)):
               if np.squeeze(scores)[i] > args.conf_thresh:
                   print("frame={}, ymin={}, xmin={}, ymax={}, xmax={}".format(frame_num, box[0]*height, box[1]*width, box[2]*height, box[3]*width))
-                  fid_csv.write(str(frame_num*1000000/frame_rate) + ', %f, %f, %f, %f\n' % (box[0]*height, box[1]*width, box[2]*height, box[3]*width))
+                  fid_csv.write(str(frame_num*1000000/frame_rate) + ', %f, %f, %f, %f, %f\n' % (box[0]*height, box[1]*width, box[2]*height, box[3]*width, power_number))
           out.write(image)
           frame_num += 1
 
